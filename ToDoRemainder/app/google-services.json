@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "1080417039023",
+    "firebase_url": "https://todo-remainder-5ce51.firebaseio.com",
+    "project_id": "todo-remainder-5ce51",
+    "storage_bucket": "todo-remainder-5ce51.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1080417039023:android:cc9752849150da132f5a5a",
+        "android_client_info": {
+          "package_name": "com.example.todoremainder"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1080417039023-qvac9n748dp46tr7bel8pcit9edgsemo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBVS1U3Tq7_u4JpiEkd2kFnM7W3fnFkmc8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1080417039023-qvac9n748dp46tr7bel8pcit9edgsemo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

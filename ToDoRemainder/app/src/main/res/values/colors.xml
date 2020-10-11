@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#03A9F4</color>
+    <color name="colorPrimaryDark">#0288D1</color>
+    <color name="colorAccent">#008CD4</color>
+    <color name ="WindowBackground">#ffffff</color>
+    <color name="navigationBarColor">#0288D1</color>
+    <color name="statusBarColor">#0288D1</color>
+    <color name="textColorPrimary">#263238</color>
+    <color name="textColorHint">#808080</color>
+    
+    <color name="colorBackground">#ffffff</color>
+    <color name="textColor">#212121</color>
+
+    <color name="textColorSecondary">#212121</color>
+</resources>

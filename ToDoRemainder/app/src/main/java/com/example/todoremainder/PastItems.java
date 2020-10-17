@@ -22,10 +22,11 @@ import java.util.StringTokenizer;
 
 public class PastItems extends AppCompatActivity {
 
+    private static final String TAG = "PastItems";
     ArrayList<CardViewItem> arrayList = new ArrayList<>();
 
     private RecyclerView mRecyclerView;
-    private CustomAdapter mAdapter;
+    private CustomAdapterPast mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
 
     private String uid;
@@ -50,12 +51,29 @@ public class PastItems extends AppCompatActivity {
         viewModel.getAll(uid).observe(this, new Observer<List<CardViewItem>>() {
             @Override
             public void onChanged(List<CardViewItem> cardViewItems) {
+                List<CardViewItem> list = getPastRemainders(cardViewItems);
+                Log.i(TAG, list.toString());
+                list = sortItems(list);
                 arrayList.clear();
-                List<CardViewItem> temp = getPastRemainders(cardViewItems);
-                arrayList.addAll(temp);
+                arrayList.addAll(list);
                 mAdapter.notifyDataSetChanged();
             }
         });
+    }
+
+    private List<CardViewItem> sortItems(List<CardViewItem> list) {
+        for(int i = 0;i <= list.size();i++){
+            for(int j = 1;j < list.size()-i;j++){
+                long a = getCalendar(list.get(j-1).getDate(),list.get(j-1).getTime()).getTimeInMillis();
+                long b = getCalendar(list.get(j).getDate(),list.get(j).getTime()).getTimeInMillis();
+                if(a > b){
+                    CardViewItem item = new CardViewItem(list.get(j-1));
+                    list.set(j-1,list.get(j));
+                    list.set(j,item);
+                }
+            }
+        }
+        return list;
     }
 
     private List<CardViewItem> getPastRemainders(List<CardViewItem> cardViewItems) {
@@ -63,6 +81,8 @@ public class PastItems extends AppCompatActivity {
         for(CardViewItem item:cardViewItems){
             Calendar calendar = getCalendar(item.getDate(),item.getTime());
             if(calendar.before(Calendar.getInstance()))
+                temp.add(item);
+            else if(item.isCheckBox())
                 temp.add(item);
         }
         return temp;
@@ -72,31 +92,18 @@ public class PastItems extends AppCompatActivity {
         mRecyclerView = findViewById(R.id.recyclerView2);
         mRecyclerView.setHasFixedSize(true);
         mLayoutManager = new LinearLayoutManager(this);
-        mAdapter = new CustomAdapter(arrayList);
+        mAdapter = new CustomAdapterPast(arrayList);
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setAdapter(mAdapter);
 
-        mAdapter.setOnItemClickListener(new CustomAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(int position) {
-
-            }
+        mAdapter.setOnItemClickListener(new CustomAdapterPast.OnItemClickListener() {
 
             @Override
             public void onDeleteClick(int position) {
                 CardViewItem item = arrayList.get(position);
                 databaseReference.child(arrayList.get(position).getId()).removeValue();
                 viewModel.delete(item);
-                //mAdapter.notifyItemRemoved(position);
-            }
-
-            @Override
-            public void onCheckBoxClick(int position) {
-                CardViewItem item = arrayList.get(position);
-                item.setCheckBox(!item.isCheckBox());
-                databaseReference.child(arrayList.get(position).getId()).setValue(item);
-                viewModel.update(item);
-                //mAdapter.notifyItemChanged(position);
+                mAdapter.notifyItemRemoved(position);
             }
         });
     }

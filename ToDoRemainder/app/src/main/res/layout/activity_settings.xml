@@ -32,17 +32,6 @@
             android:textColor="@color/textColor"
             android:prompt="@string/spinner_prompt" />
     </LinearLayout>
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Finish"
-        android:textAllCaps="false"
-        android:id="@+id/button"
-        android:onClick="closeSettings"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:background="@color/colorAccent"
-        android:layout_marginBottom="137dp" />
 
     <TextView
         android:id="@+id/textView"

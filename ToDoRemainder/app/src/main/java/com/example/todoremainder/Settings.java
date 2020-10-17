@@ -43,9 +43,12 @@ public class Settings extends AppCompatActivity {
 
     }
 
-    public void closeSettings(View view) {
+    @Override
+    protected void onStop() {
+        super.onStop();
         editor.putString("alarmPreset",temp);
         editor.apply();
         finish();
+
     }
 }

@@ -29,6 +29,15 @@ public class CardViewItem {
     public CardViewItem() {
     }
 
+    public CardViewItem(CardViewItem item) {
+        this.id = item.getId();
+        this.uid = item.getUid();
+        this.checkBox = item.isCheckBox();
+        this.title = item.getTitle();
+        this.date = item.getDate();
+        this.time = item.getTime();
+    }
+
     public void setId(String id) {
         this.id = id;
     }
@@ -75,5 +84,17 @@ public class CardViewItem {
 
     public String getTime() {
         return time;
+    }
+
+    @Override
+    public String toString() {
+        return "CardViewItem{" +
+                "id='" + id + '\'' +
+                ", uid='" + uid + '\'' +
+                ", checkBox=" + checkBox +
+                ", title='" + title + '\'' +
+                ", date='" + date + '\'' +
+                ", time='" + time + '\'' +
+                '}';
     }
 }

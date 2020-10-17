@@ -19,6 +19,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -40,6 +41,10 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -64,6 +69,18 @@ public class MainActivity extends AppCompatActivity {
 
     SharedPreferences.Editor editor;
 
+    FirebaseAuth.AuthStateListener authStateListener = new FirebaseAuth.AuthStateListener() {
+        @Override
+        public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+            if(firebaseAuth.getCurrentUser() == null){
+                Intent intent = new Intent(MainActivity.this,LoginActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                Toast.makeText(getApplicationContext(),"Logged Out Successfully",Toast.LENGTH_SHORT).show();
+                startActivity(intent);
+            }
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         mAuth = FirebaseAuth.getInstance();
+        mAuth.addAuthStateListener(authStateListener);
         uid = mAuth.getCurrentUser().getUid();
         databaseReference = FirebaseDatabase.getInstance().getReference(uid);
 
@@ -94,12 +112,15 @@ public class MainActivity extends AppCompatActivity {
         viewModel.getAll(uid).observe(this, new Observer<List<CardViewItem>>() {
             @Override
             public void onChanged(List<CardViewItem> cardViewItems) {
-                arrayList.clear();
-                arrayList.addAll(cardViewItems);
+                ArrayList<CardViewItem> list = new ArrayList<>();
                 for(CardViewItem item:cardViewItems){
                     databaseReference.child(item.getId()).setValue(item);
+                    if(!item.isCheckBox())
+                        list.add(item);
                 }
-                //arrayList = (ArrayList<CardViewItem>) cardViewItems;
+                list = sortItems(list);
+                arrayList.clear();
+                arrayList.addAll(list);
                 mAdapter.notifyDataSetChanged();
             }
         });
@@ -107,6 +128,21 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences sharedPreferences = getSharedPreferences("sharedPrefs", MODE_PRIVATE);
         editor = sharedPreferences.edit();
 
+    }
+
+    private ArrayList<CardViewItem> sortItems(ArrayList<CardViewItem> list) {
+        for(int i = 0;i <= list.size();i++){
+            for(int j = 1;j < list.size()-i;j++){
+                long a = getCalendar(list.get(j-1).getDate(),list.get(j-1).getTime()).getTimeInMillis();
+                long b = getCalendar(list.get(j).getDate(),list.get(j).getTime()).getTimeInMillis();
+                if(a > b){
+                    CardViewItem item = new CardViewItem(list.get(j-1));
+                    list.set(j-1,list.get(j));
+                    list.set(j,item);
+                }
+            }
+        }
+        return list;
     }
 
     @Override
@@ -119,9 +155,7 @@ public class MainActivity extends AppCompatActivity {
                 for (DataSnapshot itemSnapShot : snapshot.getChildren()) {
                     CardViewItem item = itemSnapShot.getValue(CardViewItem.class);
                     viewModel.insert(item);
-                    arrayList.add(item);
                 }
-              //  mAdapter.notifyDataSetChanged();
             }
 
             @Override
@@ -152,6 +186,7 @@ public class MainActivity extends AppCompatActivity {
         btn_date.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                in_date.setError(null);
                 final Calendar c = Calendar.getInstance();
                 mYear = c.get(Calendar.YEAR);
                 mMonth = c.get(Calendar.MONTH);
@@ -175,6 +210,7 @@ public class MainActivity extends AppCompatActivity {
         btn_time.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                in_time.setError(null);
                 final Calendar c = Calendar.getInstance();
                 mHour = c.get(Calendar.HOUR_OF_DAY);
                 mMinute = c.get(Calendar.MINUTE);
@@ -221,11 +257,45 @@ public class MainActivity extends AppCompatActivity {
                 title = txt_inputText.getText().toString().trim();
                 date = in_date.getText().toString().trim();
                 time = in_time.getText().toString().trim();
+                if(!isValidDate(date)){
+                    in_date.setError("Enter proper date format(DD-MM-YYYY)");
+                    in_date.requestFocus();
+                    return;
+                }
+                if (Build.VERSION.SDK_INT >= 26) {
+                    if (!isValidTime(time)) {
+                        in_time.setError("Enter proper time format(DD-MM)");
+                        in_time.requestFocus();
+                        return;
+                    }
+                }
                 addToDB(title, date, time);
                 alertDialog.dismiss();
             }
         });
         alertDialog.show();
+    }
+
+    private boolean isValidDate(String date){
+        String dateFormat = "dd-MM-yyyy";
+        DateFormat df =new SimpleDateFormat(dateFormat);
+        df.setLenient(false);
+        try {
+            df.parse(date);
+            return true;
+        } catch (ParseException e) {
+            return false;
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private boolean isValidTime(String time){
+        try {
+            LocalTime.parse(time);
+           return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     private void addToDB(String title, String date, String time) {
@@ -399,6 +469,10 @@ public class MainActivity extends AppCompatActivity {
         else if(id ==R.id.settings){
             startActivity(new Intent(this,Settings.class));
             return true;
+        }
+        else if(id ==R.id.logout){
+             mAuth.signOut();
+             return true;
         }
         return super.onOptionsItemSelected(item);
     }

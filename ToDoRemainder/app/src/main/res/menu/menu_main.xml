@@ -4,7 +4,7 @@
     tools:context="com.example.todoremainder.MainActivity">
     <item
         android:id="@+id/toggle_darkMode"
-        android:orderInCategory="100"
+        android:orderInCategory="80"
         android:title="Toggle Dark Mode"
         android:textColor="@color/textColor"
         app:showAsAction="never" />
@@ -17,8 +17,15 @@
 
     <item
         android:id="@+id/settings"
-        android:orderInCategory="100"
+        android:orderInCategory="90"
         android:title="Settings"
+        android:textColor="@color/textColor"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/logout"
+        android:orderInCategory="100"
+        android:title="Log Out"
         android:textColor="@color/textColor"
         app:showAsAction="never" />
 </menu>

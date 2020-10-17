@@ -82,8 +82,8 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                     UserData data = new UserData(uid,email,password);
                     repo.insert(data);
                     Toast.makeText(getApplicationContext(),"User registered Successfully with UID : "+uid,Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(SignUpActivity.this,MainActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    Intent intent = new Intent(SignUpActivity.this,LoginActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
                 }
                 else{

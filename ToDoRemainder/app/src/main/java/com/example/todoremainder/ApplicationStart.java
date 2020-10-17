@@ -32,6 +32,5 @@ public class ApplicationStart extends Application {
         else {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         }
-
     }
 }

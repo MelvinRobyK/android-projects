@@ -14,7 +14,7 @@ import androidx.preference.SwitchPreference;
 public class PreferenceFragment extends PreferenceFragmentCompat {
 
     SwitchPreference switchPreference;
-
+    ListPreference listPreference;
     SharedPreferences sharedPreferences;
 
     private static final String TAG = "PreferenceFragment";
@@ -23,8 +23,10 @@ public class PreferenceFragment extends PreferenceFragmentCompat {
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.main_preference,rootKey);
         switchPreference = findPreference("dark_mode");
+        listPreference = findPreference("alarm_preset");
+        if(listPreference.getValue() == null)
+            listPreference.setValueIndex(0);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        String alarmPreset = sharedPreferences.getString("alarm_preset", "");
         switchPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {

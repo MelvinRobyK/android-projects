@@ -9,8 +9,9 @@ import androidx.preference.PreferenceManager;
 
 public class ApplicationStart extends Application {
 
-    private static final String TAG = "ApplicationStart" ;
+    private static final String TAG = "ApplicationStart";
     public static boolean isDarkModeOn;
+    public static int signUpFlag = 0;
 
     @Override
     public void onCreate() {
@@ -20,20 +21,12 @@ public class ApplicationStart extends Application {
     }
 
     private void setBackground() {
-        // Saving state of our app
-        // using SharedPreferences
-       /* SharedPreferences sharedPreferences = getSharedPreferences("sharedPrefs", MODE_PRIVATE);
-        isDarkModeOn = sharedPreferences.getBoolean("isDarkModeOn", false);*/
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        isDarkModeOn = sharedPreferences.getBoolean("dark_mode",false);
-
-        // When user reopens the app
-        // after applying dark/light mode
+        isDarkModeOn = sharedPreferences.getBoolean("dark_mode", false);
         if (isDarkModeOn) {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-        }
-        else {
+        } else {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         }
     }

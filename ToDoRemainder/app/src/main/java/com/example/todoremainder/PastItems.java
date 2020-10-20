@@ -43,7 +43,7 @@ public class PastItems extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
         uid = mAuth.getCurrentUser().getUid();
-        databaseReference = FirebaseDatabase.getInstance().getReference(uid);
+        databaseReference = FirebaseDatabase.getInstance().getReference("Remainders").child(uid);
 
         buildRecyclerView();
 

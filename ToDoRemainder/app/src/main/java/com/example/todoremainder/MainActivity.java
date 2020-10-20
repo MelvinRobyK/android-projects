@@ -22,7 +22,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -45,7 +44,6 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -53,12 +51,24 @@ import java.util.StringTokenizer;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = "MainActivity" ;
+    private static final String TAG = "MainActivity";
 
     ArrayList<CardViewItem> arrayList = new ArrayList<>();
     DatabaseReference databaseReference;
     String title, date, time;
     AlarmManager alarmManager;
+    SharedPreferences.Editor editor;
+    FirebaseAuth.AuthStateListener authStateListener = new FirebaseAuth.AuthStateListener() {
+        @Override
+        public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+            if (firebaseAuth.getCurrentUser() == null) {
+                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                Toast.makeText(getApplicationContext(), "Logged Out Successfully", Toast.LENGTH_SHORT).show();
+                startActivity(intent);
+            }
+        }
+    };
     private RecyclerView mRecyclerView;
     private CustomAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
@@ -67,20 +77,6 @@ public class MainActivity extends AppCompatActivity {
     private int mYear, mMonth, mDay, mHour, mMinute;
     private CardViewItem cardViewItem = null;
     private CardViewItemViewModel viewModel;
-
-    SharedPreferences.Editor editor;
-
-    FirebaseAuth.AuthStateListener authStateListener = new FirebaseAuth.AuthStateListener() {
-        @Override
-        public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-            if(firebaseAuth.getCurrentUser() == null){
-                Intent intent = new Intent(MainActivity.this,LoginActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                Toast.makeText(getApplicationContext(),"Logged Out Successfully",Toast.LENGTH_SHORT).show();
-                startActivity(intent);
-            }
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                cardViewItem = null;
                 addToDoItem();
             }
         });
@@ -100,10 +97,10 @@ public class MainActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         mAuth.addAuthStateListener(authStateListener);
         uid = mAuth.getCurrentUser().getUid();
-        databaseReference = FirebaseDatabase.getInstance().getReference(uid);
+        databaseReference = FirebaseDatabase.getInstance().getReference("Remainders").child(uid);
 
         Intent intent = getIntent();
-        if(intent.hasExtra("uid"))
+        if (intent.hasExtra("uid"))
             uid = intent.getStringExtra("uid");
 
         buildRecyclerView();
@@ -114,9 +111,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onChanged(List<CardViewItem> cardViewItems) {
                 ArrayList<CardViewItem> list = new ArrayList<>();
-                for(CardViewItem item:cardViewItems){
+                for (CardViewItem item : cardViewItems) {
                     databaseReference.child(item.getId()).setValue(item);
-                    if(!item.isCheckBox())
+                    if (!item.isCheckBox())
                         list.add(item);
                 }
                 list = sortItems(list);
@@ -132,14 +129,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private ArrayList<CardViewItem> sortItems(ArrayList<CardViewItem> list) {
-        for(int i = 0;i <= list.size();i++){
-            for(int j = 1;j < list.size()-i;j++){
-                long a = getCalendar(list.get(j-1).getDate(),list.get(j-1).getTime()).getTimeInMillis();
-                long b = getCalendar(list.get(j).getDate(),list.get(j).getTime()).getTimeInMillis();
-                if(a > b){
-                    CardViewItem item = new CardViewItem(list.get(j-1));
-                    list.set(j-1,list.get(j));
-                    list.set(j,item);
+        for (int i = 0; i <= list.size(); i++) {
+            for (int j = 1; j < list.size() - i; j++) {
+                long a = getCalendar(list.get(j - 1).getDate(), list.get(j - 1).getTime()).getTimeInMillis();
+                long b = getCalendar(list.get(j).getDate(), list.get(j).getTime()).getTimeInMillis();
+                if (a > b) {
+                    CardViewItem item = new CardViewItem(list.get(j - 1));
+                    list.set(j - 1, list.get(j));
+                    list.set(j, item);
                 }
             }
         }
@@ -161,7 +158,6 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-
             }
         });
     }
@@ -193,8 +189,7 @@ public class MainActivity extends AppCompatActivity {
                 mMonth = c.get(Calendar.MONTH);
                 mDay = c.get(Calendar.DAY_OF_MONTH);
 
-
-                DatePickerDialog datePickerDialog = new DatePickerDialog(MainActivity.this,R.style.DialogTheme,
+                DatePickerDialog datePickerDialog = new DatePickerDialog(MainActivity.this, R.style.DialogTheme,
                         new DatePickerDialog.OnDateSetListener() {
 
                             @Override
@@ -216,22 +211,21 @@ public class MainActivity extends AppCompatActivity {
                 mHour = c.get(Calendar.HOUR_OF_DAY);
                 mMinute = c.get(Calendar.MINUTE);
 
-                // Launch Time Picker Dialog
-                TimePickerDialog timePickerDialog = new TimePickerDialog(MainActivity.this,R.style.DialogTheme,
+                TimePickerDialog timePickerDialog = new TimePickerDialog(MainActivity.this, R.style.DialogTheme,
                         new TimePickerDialog.OnTimeSetListener() {
 
                             @Override
                             public void onTimeSet(TimePicker view, int hourOfDay,
                                                   int minute) {
 
-                                if(hourOfDay<10 && minute<10)
-                                    in_time.setText("0"+hourOfDay + ":0" + minute);
-                                else if(hourOfDay<10)
-                                    in_time.setText("0"+hourOfDay + ":" + minute);
-                                else if(minute<10)
+                                if (hourOfDay < 10 && minute < 10)
+                                    in_time.setText("0" + hourOfDay + ":0" + minute);
+                                else if (hourOfDay < 10)
+                                    in_time.setText("0" + hourOfDay + ":" + minute);
+                                else if (minute < 10)
                                     in_time.setText(hourOfDay + ":0" + minute);
                                 else
-                                    in_time.setText(hourOfDay+":"+minute);
+                                    in_time.setText(hourOfDay + ":" + minute);
                             }
                         }, mHour, mMinute, false);
                 timePickerDialog.show();
@@ -258,7 +252,7 @@ public class MainActivity extends AppCompatActivity {
                 title = txt_inputText.getText().toString().trim();
                 date = in_date.getText().toString().trim();
                 time = in_time.getText().toString().trim();
-                if(!isValidDate(date)){
+                if (!isValidDate(date)) {
                     in_date.setError("Enter proper date format(DD-MM-YYYY)");
                     in_date.requestFocus();
                     return;
@@ -277,9 +271,9 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.show();
     }
 
-    private boolean isValidDate(String date){
+    private boolean isValidDate(String date) {
         String dateFormat = "dd-MM-yyyy";
-        DateFormat df =new SimpleDateFormat(dateFormat);
+        DateFormat df = new SimpleDateFormat(dateFormat);
         df.setLenient(false);
         try {
             df.parse(date);
@@ -290,10 +284,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    private boolean isValidTime(String time){
+    private boolean isValidTime(String time) {
         try {
             LocalTime.parse(time);
-           return true;
+            return true;
         } catch (Exception e) {
             return false;
         }
@@ -304,13 +298,12 @@ public class MainActivity extends AppCompatActivity {
         String id, toastMessage;
         if (cardViewItem != null) {
             id = cardViewItem.getId();
-            item = new CardViewItem(id,uid, cardViewItem.isCheckBox(), title, date, time);
-            cardViewItem = null;
+            item = new CardViewItem(id, uid, cardViewItem.isCheckBox(), title, date, time);
             viewModel.update(item);
             toastMessage = "To-Do Item Updated";
         } else {
             id = databaseReference.push().getKey();
-            item = new CardViewItem(id,uid, false, title, date, time);
+            item = new CardViewItem(id, uid, false, title, date, time);
             viewModel.insert(item);
             toastMessage = "To-Do Item added";
         }
@@ -338,9 +331,7 @@ public class MainActivity extends AppCompatActivity {
             public void onDeleteClick(int position) {
                 CardViewItem item = arrayList.get(position);
                 databaseReference.child(arrayList.get(position).getId()).removeValue();
-                // arrayList.remove(position);
                 viewModel.delete(item);
-               // mAdapter.notifyItemRemoved(position);
                 cancelAlarm(item);
             }
 
@@ -350,7 +341,6 @@ public class MainActivity extends AppCompatActivity {
                 item.setCheckBox(!item.isCheckBox());
                 databaseReference.child(arrayList.get(position).getId()).setValue(item);
                 viewModel.update(item);
-               // mAdapter.notifyItemChanged(position);
                 if (item.isCheckBox()) {
                     cancelAlarm(item);
                 } else {
@@ -377,7 +367,7 @@ public class MainActivity extends AppCompatActivity {
         if (item.isCheckBox())
             return;
         Calendar c = getCalendar(item.getDate(), item.getTime());
-        if(c.before(Calendar.getInstance()))
+        if (c.before(Calendar.getInstance()))
             return;
         c = getPresetTime(c);
         Intent intent = new Intent(this, AlertReceiver.class);
@@ -395,20 +385,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private Calendar getPresetTime(Calendar c) {
-    /*    SharedPreferences sharedPreferences = getSharedPreferences("sharedPrefs", MODE_PRIVATE);
-        String alarmPreset = sharedPreferences.getString("alarmPreset","Exact Time");*/
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         String alarmPreset = sharedPreferences.getString("alarm_preset", "Exact Time");
-        Log.i(TAG, "getPresetTime: "+alarmPreset);
-        if(alarmPreset.equals("Exact Time"))
+        Log.i(TAG, "getPresetTime: " + alarmPreset);
+        if (alarmPreset.equals("Exact Time"))
             return c;
-        else{
+        else {
             StringTokenizer tokenizer = new StringTokenizer(alarmPreset);
             int presetTime = Integer.parseInt(tokenizer.nextToken());
-            if(tokenizer.nextToken().equals("Minutes"))
-                c.add(Calendar.MINUTE,-presetTime);
+            if (tokenizer.nextToken().equals("Minutes"))
+                c.add(Calendar.MINUTE, -presetTime);
             else
-                c.add(Calendar.HOUR_OF_DAY,-presetTime);
+                c.add(Calendar.HOUR_OF_DAY, -presetTime);
             return c;
         }
     }
@@ -422,32 +410,23 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-
 
         int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if(id ==R.id.past_items){
-            startActivity(new Intent(this,PastItems.class));
+        if (id == R.id.past_items) {
+            startActivity(new Intent(this, PastItems.class));
             return true;
-            }
-        else if(id ==R.id.settings){
-            startActivity(new Intent(this,PreferenceActivity.class));
+        } else if (id == R.id.settings) {
+            startActivity(new Intent(this, PreferenceActivity.class));
             return true;
-        }
-        else if(id ==R.id.logout){
-             mAuth.signOut();
-             return true;
+        } else if (id == R.id.logout) {
+            mAuth.signOut();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }

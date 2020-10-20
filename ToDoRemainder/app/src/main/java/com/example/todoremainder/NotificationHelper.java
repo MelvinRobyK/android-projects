@@ -38,7 +38,7 @@ public class NotificationHelper extends ContextWrapper {
         NotificationChannel channel = new NotificationChannel(channelID, channelName, NotificationManager.IMPORTANCE_HIGH);
         channel.enableVibration(true);
         channel.enableLights(true);
-        channel.setSound(alarmSound,attributes);
+       // channel.setSound(alarmSound,attributes);
         getManager().createNotificationChannel(channel);
     }
 
@@ -57,7 +57,8 @@ public class NotificationHelper extends ContextWrapper {
                 .setContentText("Your AlarmManager is working.")
                 .setContentIntent(contentIntent)
                 .setAutoCancel(true)
-                .setDefaults(Notification.DEFAULT_SOUND)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setDefaults(NotificationCompat.DEFAULT_ALL)
                 .setSmallIcon(R.drawable.alarm);
     }
 }

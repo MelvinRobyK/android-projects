@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <PreferenceCategory
+        android:title="Settings">
+    <ListPreference
+        android:key="alarm_preset"
+        app:useSimpleSummaryProvider="true"
+        android:title="Set the preset Value"
+        android:summary="You will be notified some time prior to the remainder as set above."
+        android:entries="@array/alarm_preset_values"
+        android:entryValues="@array/alarm_preset_values"/>
+    <SwitchPreference
+        android:key="dark_mode"
+        android:title="Dark Theme"
+        android:summary="Toggle between Dark mode and Light mode"/>
+    </PreferenceCategory>
+</PreferenceScreen>

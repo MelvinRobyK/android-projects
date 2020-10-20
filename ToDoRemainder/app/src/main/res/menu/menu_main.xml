@@ -2,12 +2,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.example.todoremainder.MainActivity">
-    <item
-        android:id="@+id/toggle_darkMode"
-        android:orderInCategory="80"
-        android:title="Toggle Dark Mode"
-        android:textColor="@color/textColor"
-        app:showAsAction="never" />
+
     <item
         android:id="@+id/past_items"
         android:orderInCategory="10"

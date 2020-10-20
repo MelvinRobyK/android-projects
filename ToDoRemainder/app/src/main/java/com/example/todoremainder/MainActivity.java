@@ -26,6 +26,7 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -352,9 +353,7 @@ public class MainActivity extends AppCompatActivity {
                // mAdapter.notifyItemChanged(position);
                 if (item.isCheckBox()) {
                     cancelAlarm(item);
-                    Log.i(TAG, "onCheckBoxClick: Cancel Alarm");
                 } else {
-                    Log.i(TAG, "onCheckBoxClick: Set Alarm");
                     setAlarm(item);
                 }
             }
@@ -371,7 +370,6 @@ public class MainActivity extends AppCompatActivity {
         calendar.set(Calendar.HOUR_OF_DAY, Integer.parseInt(tokenTime.nextToken()));
         calendar.set(Calendar.MINUTE, Integer.parseInt(tokenTime.nextToken()));
         calendar.set(Calendar.SECOND, 0);
-        Log.i(TAG, DateFormat.getTimeInstance(DateFormat.SHORT).format(calendar.getTime()));
         return calendar;
     }
 
@@ -387,7 +385,6 @@ public class MainActivity extends AppCompatActivity {
         String title = item.getTitle();
         intent.putExtra("id", id);
         intent.putExtra("title", title);
-        Log.i(TAG, "setAlarm: "+id+" "+title);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this, id.hashCode(), intent, 0);
         if (Build.VERSION.SDK_INT >= 23)
             alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(), pendingIntent);
@@ -398,8 +395,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private Calendar getPresetTime(Calendar c) {
-        SharedPreferences sharedPreferences = getSharedPreferences("sharedPrefs", MODE_PRIVATE);
-        String alarmPreset = sharedPreferences.getString("alarmPreset","Exact Time");
+    /*    SharedPreferences sharedPreferences = getSharedPreferences("sharedPrefs", MODE_PRIVATE);
+        String alarmPreset = sharedPreferences.getString("alarmPreset","Exact Time");*/
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        String alarmPreset = sharedPreferences.getString("alarm_preset", "Exact Time");
+        Log.i(TAG, "getPresetTime: "+alarmPreset);
         if(alarmPreset.equals("Exact Time"))
             return c;
         else{
@@ -437,37 +437,12 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.toggle_darkMode) {
-            if (ApplicationStart.isDarkModeOn) {
-
-                // if dark mode is on it
-                // will turn it off
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-                ApplicationStart.isDarkModeOn = false;
-                // it will set isDarkModeOn
-                // boolean to false
-                editor.putBoolean("isDarkModeOn", false);
-            }
-            else {
-
-                // if dark mode is off
-                // it will turn it on
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-                ApplicationStart.isDarkModeOn = true;
-
-                // it will set isDarkModeOn
-                // boolean to true
-                editor.putBoolean("isDarkModeOn", true);
-            }
-            editor.apply();
-            return true;
-        }
-        else if(id ==R.id.past_items){
+        if(id ==R.id.past_items){
             startActivity(new Intent(this,PastItems.class));
             return true;
             }
         else if(id ==R.id.settings){
-            startActivity(new Intent(this,Settings.class));
+            startActivity(new Intent(this,PreferenceActivity.class));
             return true;
         }
         else if(id ==R.id.logout){

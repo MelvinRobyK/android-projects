@@ -12,5 +12,5 @@
     <color name="colorBackground">#263238</color>
     <color name="textColor">#ffffff</color>
 
-    <color name="textColorSecondary">#455A64</color>
+    <color name="textColorSecondary">#FAFAFA</color>
 </resources>

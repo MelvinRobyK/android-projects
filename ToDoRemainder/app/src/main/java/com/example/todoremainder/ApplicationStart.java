@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.util.Log;
 
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.preference.PreferenceManager;
 
 public class ApplicationStart extends Application {
 
@@ -21,8 +22,11 @@ public class ApplicationStart extends Application {
     private void setBackground() {
         // Saving state of our app
         // using SharedPreferences
-        SharedPreferences sharedPreferences = getSharedPreferences("sharedPrefs", MODE_PRIVATE);
-        isDarkModeOn = sharedPreferences.getBoolean("isDarkModeOn", false);
+       /* SharedPreferences sharedPreferences = getSharedPreferences("sharedPrefs", MODE_PRIVATE);
+        isDarkModeOn = sharedPreferences.getBoolean("isDarkModeOn", false);*/
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        isDarkModeOn = sharedPreferences.getBoolean("dark_mode",false);
 
         // When user reopens the app
         // after applying dark/light mode
